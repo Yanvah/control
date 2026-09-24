@@ -1,0 +1,9 @@
+# Keep generated files and immutable migration history byte-for-byte intact.
+package-lock.json
+next-env.d.ts
+src/db/migrations/
+
+# Prose and artwork are maintained separately from source formatting.
+**/*.md
+assets/
+public/

@@ -1,0 +1,90 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+    inputs:
+      export-image:
+        description: Retain the tested image for the manual release workflow.
+        type: boolean
+        default: false
+    outputs:
+      image-id:
+        description: Docker content ID of the tested image.
+        value: ${{ jobs.validate.outputs.image-id }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      image-id: ${{ steps.image.outputs.image-id }}
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out the exact event revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.2"
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit and integration tests
+        run: npm test
+      - name: Release gate tests
+        run: npm run test:release
+      - name: Review dependency advisories
+        run: npm audit --audit-level=high
+      - name: Install Chromium
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Browser tests against the real SDK
+        run: npm run test:e2e
+      - name: Production build
+        run: npm run build
+      - name: Build the production container
+        run: |
+          docker build --pull -t yanvah-control:local \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            .
+      - name: Validate the production container
+        run: npm run test:container -- --image yanvah-control:local
+      - name: Record the tested image
+        id: image
+        run: echo "image-id=$(docker image inspect yanvah-control:local --format '{{.Id}}')" >> "$GITHUB_OUTPUT"
+      - name: Export the tested image
+        if: inputs.export-image
+        run: |
+          mkdir -p .artifacts/release
+          docker save yanvah-control:local | gzip -1 > .artifacts/release/control-image.tar.gz
+      - name: Retain only the release image
+        if: inputs.export-image
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: validated-image
+          path: .artifacts/release/control-image.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true

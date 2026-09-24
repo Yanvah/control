@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789922888592,
+      "tag": "0000_auth_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789922900580,
+      "tag": "0001_lock_first_owner",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789924319403,
+      "tag": "0002_product_registry",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789930232712,
+      "tag": "0003_operation_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789937568344,
+      "tag": "0004_audit_trail",
+      "breakpoints": true
+    }
+  ]
+}

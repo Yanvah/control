@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible application or deployment problem.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For suspected vulnerabilities, follow SECURITY.md instead of opening a public issue.
+        Remove passwords, setup tokens, product credentials, cookies, customer records, and private hostnames from every attachment.
+  - type: input
+    id: version
+    attributes:
+      label: Version or image digest
+      description: Include the exact revision or container image digest.
+    validations:
+      required: true
+  - type: textarea
+    id: deployment
+    attributes:
+      label: Deployment
+      description: Operating system, CPU architecture, Docker/Compose versions, and proxy type. Do not paste your environment file.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Use disposable accounts and credentials in your reproduction.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include safe error codes and redacted logs if useful.
+    validations:
+      required: true

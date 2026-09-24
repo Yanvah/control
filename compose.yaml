@@ -1,0 +1,35 @@
+services:
+  control:
+    image: ${CONTROL_IMAGE:-yanvah-control:local}
+    build:
+      context: .
+    env_file:
+      - ${CONTROL_ENV_FILE:-.env.production}
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      DATABASE_PATH: /data/control.db
+      CONTROL_ALLOW_HTTP_ENDPOINTS: "false"
+    ports:
+      - "127.0.0.1:${CONTROL_PORT:-3000}:3000"
+    volumes:
+      - control-data:/data
+    user: "10001:10001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    pids_limit: 256
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  control-data:
